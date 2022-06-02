@@ -1,7 +1,21 @@
 import numpy as np
 import scipy as sp
+import pandas as pd
+import matplotlib.pyplot as plt
 import scipy.stats as stats
 from model import ResponseData, ChartData
+
+# lightgbm
+import lightgbm as lgb
+from sklearn.pipeline import Pipeline
+from imblearn.over_sampling import SMOTE
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import FeatureUnion
+from sklearn.metrics import roc_auc_score, f1_score, classification_report, roc_curve,accuracy_score, average_precision_score,precision_score,recall_score
+from sklearn.model_selection import GridSearchCV,train_test_split
+from sklearn_features.transformers import DataFrameSelector
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
 
 
 def parse_input(request):
@@ -230,3 +244,109 @@ def cal_logistic(request):
 
 def cal_lightgbm(request):
     xarray, yarray = parse_input(request)
+    X = pd.DataFrame(xarray)
+    Y = pd.DataFrame(yarray)
+    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
+
+    """数据预处理"""
+    num_attribs = list(X_train)
+    cat_attribs = list(y_train)
+    # 数据处理流水线
+    num_pipeline = Pipeline([
+            ('selector', DataFrameSelector(num_attribs)), # 挑出数值属性
+            ('imputer', SimpleImputer()),   # 填充缺失值
+            ('std_scaler', StandardScaler()) # 特征缩放
+        ])
+
+    cat_pipeline = Pipeline([
+            ('selector',DataFrameSelector(cat_attribs)), # 挑出分类属性
+            ('imputer', SimpleImputer(strategy='most_frequent')),   # 填充缺失值
+            ('encoder', OneHotEncoder()) # 独热编码
+        ])
+
+    full_pipeline = FeatureUnion(transformer_list=[
+            ('num_pipeline', num_pipeline),
+            ('cat_pipeline', cat_pipeline)
+        ])
+    X_train_prepared = full_pipeline.fit_transform(X_train)
+    X_test_prepared = full_pipeline.fit_transform(X_test)
+    # 处理样本不平衡，降低样本近邻个数，提了几个点精确度，避免小样本近邻插值报错
+    oversample = SMOTE(k_neighbors=2)
+    X_train_prepared_smote, y_train_smote = oversample.fit_resample(X_train_prepared, y_train)
+    # print(type(X_train_prepared_smote))
+    # print(type(y_train_smote))
+    """模型训练"""
+    clf = lgb.LGBMClassifier()
+    # 网格搜索，寻找最优参数组合
+    params = {'max_depth': [3, 5 ,6, 9],
+            'learning_rate': [0.1,0.15,0.3],
+            'num_leaves': [10, 20, 30, 40, 50, 60],
+            'is_unbalance': [True]
+            }
+
+    grid_search = GridSearchCV(clf, param_grid=params, scoring='f1_weighted', cv=3, n_jobs=-1)
+    grid_search.fit(X_train_prepared_smote, y_train_smote)
+    best_clf = grid_search.best_estimator_ # 最佳分类器
+    # print(best_clf)
+    
+    # 保存模型
+    best_clf.booster_.save_model("lgb.txt")
+    # 加载模型
+    # clf_loads = lgb.Booster(model_file='lgb.txt')
+    # probas  = clf_fs.predict(test)
+    
+    # 保存feature_importance
+    booster = best_clf.booster_
+    importance = booster.feature_importance(importance_type='split')
+    # print(importance)
+    # feature_name = booster.feature_name()
+    # feature_importance = pd.DataFrame({
+    #     'feature_name':feature_name,'importance':importance} )
+    # print(feature_importance)
+    # chart_fi = ChartData(
+    #     chartId=0,
+    #     yaxis=feature_name,
+    #     y=importance,
+    # )
+    """模型预测与评估"""
+    y_pred = best_clf.predict(X_test_prepared) # 使用最优模型进行预测
+    
+    chartArray = []
+    chart1 = ChartData(
+        chartId = 0, yaxis=["Weighted precision", "Weighted recall", "Weighted f1-score"], 
+        y=[[precision_score(y_test, y_pred, average='weighted'), recall_score(y_test, y_pred, average='weighted'), f1_score(y_test, y_pred, average='weighted')]]
+    )
+    chartArray.append(chart1)
+    chart2 = ChartData(
+        chartId = 0, yaxis=["Macro precision", "Macro recall", "Macro f1-score"], 
+        y=[[precision_score(y_test, y_pred, average='macro'), recall_score(y_test, y_pred, average='macro'), f1_score(y_test, y_pred, average='macro')]]
+    )
+    chartArray.append(chart2)
+    chart3 = ChartData(
+        chartId = 0, yaxis=["Micro precision", "Micro recall", "Micro f1-score"], 
+        y=[[precision_score(y_test, y_pred, average='micro'), recall_score(y_test, y_pred, average='micro'), f1_score(y_test, y_pred, average='micro')]]
+    )
+    chartArray.append(chart3)
+    chart4 = ChartData(
+        chartId = 0, yaxis=["roc_auc"], 
+        y=[[roc_auc_score(y_test, y_pred, multi_class="ovo")]]
+    )
+    chartArray.append(chart4)
+    
+    # 因为这是multiclass，很难画图，后面再想办法吧
+    # y_pred = best_clf.predict_proba(X_test_prepared)
+    # fpr, tpr, thersholds = roc_curve(y_test, y_pre, pos_label=2)
+    # roc_auc = auc(fpr, tpr)
+    
+    # plt.plot(fpr, tpr, 'k--', label='ROC (area = {0:.2f})'.format(roc_auc), lw=2)
+    
+    # plt.xlim([-0.05, 1.05])  # 设置x、y轴的上下限，以免和边缘重合，更好的观察图像的整体
+    # plt.ylim([-0.05, 1.05])
+    # plt.xlabel('False Positive Rate')
+    # plt.ylabel('True Positive Rate')  # 可以使用中文，但需要导入一些库即字体
+    # plt.title('ROC Curve')
+    # plt.legend(loc="lower right")
+    # plt.show()
+    # info 里面是重要性
+    return ResponseData(total=1, info=str(list(importance)), chartArray=chartArray)
+
