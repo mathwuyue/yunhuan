@@ -4,17 +4,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 from model import ResponseData, ChartData
-
+from itertools import cycle
 # lightgbm
 import lightgbm as lgb
 from sklearn.pipeline import Pipeline
 from imblearn.over_sampling import SMOTE
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import FeatureUnion
-from sklearn.metrics import roc_auc_score, f1_score, classification_report, roc_curve,accuracy_score, average_precision_score,precision_score,recall_score
+from sklearn.metrics import roc_auc_score, f1_score, classification_report, roc_curve,accuracy_score, average_precision_score,precision_score,recall_score,auc
 from sklearn.model_selection import GridSearchCV,train_test_split
 from sklearn_features.transformers import DataFrameSelector
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler, label_binarize
+
 
 
 
@@ -236,6 +237,70 @@ def cal_significant_test(request):
 
 def cal_svm(request):
     xarray, yarray = parse_input(request)
+    X = pd.DataFrame(xarray)
+    Y = pd.DataFrame(yarray)
+    Y = np.array(Y)
+    Y0 = [1 if y == 0 else 0 for y in Y]
+    Y1 = [1 if y == 1 else 0 for y in Y]
+    Y2 = [1 if y == 2 else 0 for y in Y]
+    Y3 = [1 if y == 3 else 0 for y in Y]
+    Y4 = [1 if y == 4 else 0 for y in Y]
+    Y5 = [1 if y == 5 else 0 for y in Y]
+    x_train_all, x_predict, y_train_all, y_predict = train_test_split(X, Y, test_size=0.10, random_state=100)
+    x_train, x_test, y_train, y_test = train_test_split(x_train_all, y_train_all, test_size=0.2, random_state=100)
+
+    x_train_all0, x_predict0, y_train_all0, y_predict0 = train_test_split(X, Y0, test_size=0.10, random_state=100)
+    x_train0, x_test0, y_train0, y_test0 = train_test_split(x_train_all0, y_train_all0, test_size=0.2, random_state=100)
+
+    x_train_all1, x_predict1, y_train_all1, y_predict1 = train_test_split(X, Y1, test_size=0.10, random_state=100)
+    x_train1, x_test1, y_train1, y_test1 = train_test_split(x_train_all1, y_train_all1, test_size=0.2, random_state=100)
+
+    x_train_all2, x_predict2, y_train_all2, y_predict2 = train_test_split(X, Y2, test_size=0.10, random_state=100)
+    x_train2, x_test2, y_train2, y_test2 = train_test_split(x_train_all2, y_train_all2, test_size=0.2, random_state=100)
+
+    x_train_all3, x_predict3, y_train_all3, y_predict3 = train_test_split(X, Y3, test_size=0.10, random_state=100)
+    x_train3, x_test3, y_train3, y_test3 = train_test_split(x_train_all3, y_train_all3, test_size=0.2, random_state=100)
+
+    x_train_all4, x_predict4, y_train_all4, y_predict4 = train_test_split(X, Y4, test_size=0.10, random_state=100)
+    x_train4, x_test4, y_train4, y_test4 = train_test_split(x_train_all4, y_train_all4, test_size=0.2, random_state=100)
+
+    x_train_all5, x_predict5, y_train_all5, y_predict5 = train_test_split(X, Y5, test_size=0.10, random_state=100)
+    x_train5, x_test5, y_train5, y_test5 = train_test_split(x_train_all5, y_train_all5, test_size=0.2, random_state=100)
+    
+    tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
+                        'C': [1, 10, 100, 1000]},
+                        {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
+    scores = ['precision', 'recall']
+
+    model0 = SVC(C=1,kernel='rbf',decision_function_shape='ovo', probability=True).fit(x_train0, y_train0)
+
+    model1 = SVC(C=1,kernel='rbf', degree=3,decision_function_shape='ovo', probability=True).fit(x_train1, y_train1)
+
+    model2 = SVC(C=1,kernel='rbf', degree=3,decision_function_shape='ovo', probability=True).fit(x_train2, y_train2)
+
+    model3 = SVC(C=1,kernel='rbf', degree=3,decision_function_shape='ovo', probability=True).fit(x_train3, y_train3)
+
+    model4 = SVC(C=1,kernel='rbf', degree=3,decision_function_shape='ovo', probability=True).fit(x_train4, y_train4)
+
+    model5 = SVC(C=1,kernel='rbf', degree=3,decision_function_shape='ovo', probability=True).fit(x_train5, y_train5)
+    #score
+    accuracy0 = model0.score(x_test,y_test0)
+    accuracy1 = model0.score(x_test,y_test1)
+    accuracy2 = model0.score(x_test,y_test2)
+    accuracy3 = model0.score(x_test,y_test3)
+    accuracy4 = model0.score(x_test,y_test4)
+    accuracy5 = model0.score(x_test,y_test5)
+    fig = plt.figure()#生成一个空白图形并且将其赋值给fig对象
+    y = [accuracy0,accuracy1,accuracy2,accuracy3,accuracy4,accuracy5]
+    plt.title("rbf core accuracy")
+    plt.xlabel('Wagner Level')
+    plt.ylabel('Accuracy')
+    plt.ylim(0,1)
+    plt.plot([1,2,3,4,5,6],y)
+    plt.show()
+    fig.savefig("svm.png")
+    chartArray = []
+    return ResponseData(total=1, info='ok', chartArray=chartArray)
 
 
 def cal_logistic(request):
@@ -327,26 +392,32 @@ def cal_lightgbm(request):
         y=[[precision_score(y_test, y_pred, average='micro'), recall_score(y_test, y_pred, average='micro'), f1_score(y_test, y_pred, average='micro')]]
     )
     chartArray.append(chart3)
-    chart4 = ChartData(
-        chartId = 0, yaxis=["roc_auc"], 
-        y=[[roc_auc_score(y_test, y_pred, multi_class="ovo")]]
-    )
-    chartArray.append(chart4)
     
-    # 因为这是multiclass，很难画图，后面再想办法吧
-    # y_pred = best_clf.predict_proba(X_test_prepared)
-    # fpr, tpr, thersholds = roc_curve(y_test, y_pre, pos_label=2)
-    # roc_auc = auc(fpr, tpr)
-    
-    # plt.plot(fpr, tpr, 'k--', label='ROC (area = {0:.2f})'.format(roc_auc), lw=2)
-    
-    # plt.xlim([-0.05, 1.05])  # 设置x、y轴的上下限，以免和边缘重合，更好的观察图像的整体
-    # plt.ylim([-0.05, 1.05])
-    # plt.xlabel('False Positive Rate')
-    # plt.ylabel('True Positive Rate')  # 可以使用中文，但需要导入一些库即字体
-    # plt.title('ROC Curve')
-    # plt.legend(loc="lower right")
-    # plt.show()
-    # info 里面是重要性
+    num_classes = int(np.max(list(y_train)))
+    y_test = label_binarize(y_test, classes=[i for i in range(num_classes)])
+    n_classes = y_resampled.shape[1]
+    print(n_classes)
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    for i in range(n_classes):
+        fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_pred[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
+    colors = cycle(['blue', 'red', 'green','yellow','orange'])
+    fig = plt.figure()#生成一个空白图形并且将其赋值给fig对象
+    for i, color in zip(range(n_classes), colors):
+        plt.plot(fpr[i], tpr[i], color=color,
+                label='ROC curve of class {0} (area = {1:0.2f})'
+                ''.format(i, roc_auc[i]))
+
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([-0.05, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver operating characteristic for multi-class data')
+    plt.legend(loc="lower right")
+    plt.show()
+    fig.savefig("first.png")
     return ResponseData(total=1, info=str(list(importance)), chartArray=chartArray)
 
