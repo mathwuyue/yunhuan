@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuyue.admin.dal.dao.CaseInfoDao">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yuyue.admin.dal.po.CaseInfoPO">
+        <result column="id" property="id" />
+        <result column="detail_address" property="detailAddress" />
+        <result column="lgt" property="lgt" />
+        <result column="lat" property="lat" />
+        <result column="confidence" property="confidence" />
+        <result column="sex" property="sex" />
+        <result column="height" property="height" />
+        <result column="year" property="year" />
+        <result column="weight" property="weight" />
+        <result column="job" property="job" />
+        <result column="disease" property="disease" />
+        <result column="health_care" property="healthCare" />
+        <result column="surface_part" property="surfacePart" />
+        <result column="surface_area" property="surfaceArea" />
+        <result column="surface_type" property="surfaceType" />
+        <result column="metabolic_ulcer" property="metabolicUlcer" />
+        <result column="dm_time" property="dmTime" />
+        <result column="dm_used" property="dmUsed" />
+        <result column="dm_course" property="dmCourse" />
+        <result column="df_time" property="dfTime" />
+        <result column="df_cause" property="dfCause" />
+        <result column="df_part" property="dfPart" />
+        <result column="operation_part" property="operationPart" />
+        <result column="amputation_part" property="amputationPart" />
+        <result column="smoke" property="smoke" />
+        <result column="drink_years" property="drinkYears" />
+        <result column="drinking" property="drinking" />
+        <result column="start_time" property="startTime" />
+        <result column="before_day" property="beforeDay" />
+        <result column="cure_way" property="cureWay" />
+        <result column="pathogenic_bacteria" property="pathogenicBacteria" />
+        <result column="hosipital" property="hosipital" />
+        <result column="hosipital_address" property="hosipitalAddress" />
+        <result column="doctor" property="doctor" />
+        <result column="department" property="department" />
+        <result column="in_day" property="inDay" />
+        <result column="cost" property="cost" />
+        <result column="course" property="course" />
+        <result column="cure_outcome" property="cureOutcome" />
+        <result column="operation_course" property="operationCourse" />
+        <result column="case_source" property="caseSource" />
+        <result column="edu" property="edu" />
+        <result column="bmi" property="bmi" />
+        <result column="dc" property="dc" />
+        <result column="hba1c" property="hba1c" />
+        <result column="wagner" property="wagner" />
+        <result column="wbc" property="wbc" />
+        <result column="crp" property="crp" />
+        <result column="procalcitonin" property="procalcitonin" />
+        <result column="fpg" property="fpg" />
+        <result column="uric_acid" property="uricAcid" />
+        <result column="triglyceride" property="triglyceride" />
+        <result column="total_cholesterol" property="totalCholesterol" />
+        <result column="hdlc" property="hdlc" />
+        <result column="ldlc" property="ldlc" />
+        <result column="hemoglobin" property="hemoglobin" />
+        <result column="alb" property="alb" />
+        <result column="abi" property="abi" />
+        <result column="cre" property="cre" />
+        <result column="platelet" property="platelet" />
+        <result column="neut" property="neut" />
+    </resultMap>
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id,detail_address, lgt,lat,confidence,sex,height,`year`,weight,job,disease,health_care,surface_part,surface_area,surface_type,metabolic_ulcer,dm_time,dm_used,dm_course,df_time,df_cause,df_part,operation_part,amputation_part,smoke,drink_years,drinking,start_time,before_day,cure_way,pathogenic_bacteria,hosipital,hosipital_address,doctor,department,in_day,cost,course,cure_outcome,operation_course,case_source,edu,bmi,dc,hba1c,wagner,wbc,crp,procalcitonin,fpg,uric_acid,triglyceride,total_cholesterol,hdlc,ldlc,hemoglobin,alb,abi,cre,platelet,neut
+    </sql>
+
+</mapper>
