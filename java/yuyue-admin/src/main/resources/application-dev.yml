@@ -1,0 +1,13 @@
+logging:
+  level:
+    com.whats.admin: debug
+
+spring:
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/survey
+    username: survey
+    password: survey@2021
+#  grpc:
+#    remote-servers:
+#      - host: http://surveyadmin.etalkai.com
+#      - port: 50051
