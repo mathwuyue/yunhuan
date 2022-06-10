@@ -1,7 +1,22 @@
+# Copyright 2022 Suzhou Yifei YuYue Co.
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import numpy as np
 import scipy as sp
 import scipy.stats as stats
-from model import ResponseData, ChartData
+from model import ChartData, ResponseData
 
 
 def parse_input(request):
@@ -74,7 +89,10 @@ def cal_test_of_normality(request):
         skew = stats.skew(xs)
         kurtosis = stats.kurtosis(xs)
         if len(xs) >= 2000:
-            test_res = stats.kstest(xs, "norm")
+            loc, scale = stats.norm.fit(xs)
+            n = stats.norm(loc=loc, scale=scale)
+            test_res = stats.kstest(xs, n.cdf)
+            print(test_res)
             row.append("Kolmogorov-Smirnov检验")
         else:
             test_res = stats.shapiro(xs)
@@ -82,9 +100,9 @@ def cal_test_of_normality(request):
         if test_res.pvalue == 0:
             row.append("不可检验")
         elif test_res.pvalue <= 0.05:
-            row.append("是")
-        else:
             row.append("否")
+        else:
+            row.append("是")
         row.append(str(len(xs)))
         row.append("%.2f" % skew)
         row.append("%.2f" % kurtosis)
@@ -193,6 +211,7 @@ def cal_test_relative(request):
         # put into table
         table_rows.append(row)
         # scartter plot
+        x = list(zip(sorted(xs), sorted(ys)))
         scatter_plots.append(
             ChartData(
                 chartId=10,

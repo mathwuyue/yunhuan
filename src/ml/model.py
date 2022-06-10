@@ -13,7 +13,7 @@ class ChartData(BaseModel):
 
 class ResponseData(BaseModel):
     total: int
-    chartArray: List[ChartData]
+    chartArray: List[ChartData] = []
     info: Optional[str] = ""
 
 

@@ -1,23 +1,24 @@
 import gevent
-from gevent.pywsgi import WSGIServer
 from gevent import monkey
+from gevent.pywsgi import WSGIServer
 
 monkey.patch_all()
 
-from flask import Flask as _Flask, make_response, request, jsonify, send_file
+import datetime
+import json
+
+import psycopg2
+from decorator import login_required
+from flask import Flask as _Flask
+from flask import jsonify, make_response, request, send_file
 from flask.globals import session
 
 # from flask_session import Session
 from flask.json import JSONEncoder as _JSONEncoder
-import psycopg2
 from flask_cors import *
-import json
-from psycopg2 import pool
 from gevent.pywsgi import WSGIServer
-import datetime
-from decorator import login_required
+from psycopg2 import pool
 from utils import *
-
 
 app = _Flask(__name__, static_url_path="")
 app.secret_key = (

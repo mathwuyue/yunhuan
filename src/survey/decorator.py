@@ -1,5 +1,7 @@
-from flask import session, jsonify
 from functools import wraps
+
+from flask import jsonify, session
+
 
 # 登录验证
 def login_required(role):

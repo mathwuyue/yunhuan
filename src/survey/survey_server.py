@@ -1,27 +1,29 @@
 # TODO: SQL is too lousy
 
 import os
-from flask.globals import session
+
 import gevent
-from gevent.pywsgi import WSGIServer
+from flask.globals import session
 from gevent import monkey
+from gevent.pywsgi import WSGIServer
 
 monkey.patch_all()
 
-from flask import Flask as _Flask, request, jsonify
-from werkzeug.utils import secure_filename
-from flask.json import JSONEncoder as _JSONEncoder
-import psycopg2
-from flask_cors import *
-import json
-from psycopg2 import pool
-import redis
-from gevent.pywsgi import WSGIServer
 import datetime
-from decorator import login_required
-from utils import *
-from alibaba.sms import SMSVerfication
+import json
 
+import psycopg2
+import redis
+from alibaba.sms import SMSVerfication
+from decorator import login_required
+from flask import Flask as _Flask
+from flask import jsonify, request
+from flask.json import JSONEncoder as _JSONEncoder
+from flask_cors import *
+from gevent.pywsgi import WSGIServer
+from psycopg2 import pool
+from utils import *
+from werkzeug.utils import secure_filename
 
 app = _Flask(__name__, static_url_path="")
 app.secret_key = (

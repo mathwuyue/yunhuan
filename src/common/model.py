@@ -22,5 +22,5 @@ class RequestData(BaseModel):
     condition: Optional[str] = ""
     x_count: int
     y_count: int
-    x: List[List[Any]] = []
-    y: List[List[Any]] = []
+    x: List[List[float]] = []
+    y: List[List[float]] = []

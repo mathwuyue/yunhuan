@@ -1,12 +1,8 @@
+from basic_core import *
 from fastapi import FastAPI
-
-import pandas as pd
-import numpy as np
-import scipy
-
-from stats_core import *
+from ml_core import *
 from model import RequestData
-
+from stats_core import *
 
 app = FastAPI()
 
@@ -19,3 +15,9 @@ async def GetResult(request: RequestData):
         return cal_test_of_normality(request)
     elif request.modelId == 6:
         return cal_test_relative(request)
+    elif request.modelId == 18:
+        return cal_category_dist(request)
+    elif request.modelId == 14:
+        return cal_svm(request)
+    elif request.modelId == 16:
+        return cal_lightgbm(request)
